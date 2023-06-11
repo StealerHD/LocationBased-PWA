@@ -1,7 +1,7 @@
 {
-  "name": "LocationBasedApp",
-  "short_name": "LocationBasedApp",
-  "description": "LocationBasedApp",
+  "name": "LocationBased-PWA",
+  "short_name": "LocationBased-PWA",
+  "description": "LocationBased-PWA",
   "lang": "en-US",
   "start_url": "/",
   "display": "standalone",
