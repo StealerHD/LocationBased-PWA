@@ -1,0 +1,17 @@
+{
+  "type": [
+    "pwa"
+  ],
+  "name": "LocationBasedApp",
+  "framework": "react",
+  "template": "blank",
+  "bundler": "vite",
+  "cssPreProcessor": false,
+  "theming": {
+    "customColor": false,
+    "color": "#007aff",
+    "darkMode": true,
+    "iconFonts": true
+  },
+  "customBuild": false
+}
