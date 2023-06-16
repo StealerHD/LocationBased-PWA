@@ -1,1 +1,10 @@
 /* Your app custom styles here */
+
+.panel {
+    width: 400px;
+}
+@media only screen and (max-width: 1200px) {
+    .panel {
+        width: 260px;
+    }
+}

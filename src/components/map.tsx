@@ -71,7 +71,7 @@ export default function Map(props: any) {
     <MapContainer
       center={props.startGeoData}
       zoom={14}
-      style={{ height: "650px" }}
+      style={{ height: "75vh" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

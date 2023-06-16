@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const WikipediaEntry = ({ searchTerm }) => {
-    const [content, setContent] = useState(null);
+const WikipediaEntry = (props: any) => {
+    const [content, setContent]: any = useState(null);
     const [image, setImage] = useState(null);
-    console.log(searchTerm)
+    console.log(props.searchTerm)
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await axios.get(
-                    `https://en.wikipedia.org/api/rest_v1/page/summary/${searchTerm}`
+                    `https://en.wikipedia.org/api/rest_v1/page/summary/${props.searchTerm}`
                 );
                 const data = response.data;
                 
@@ -30,7 +30,7 @@ const WikipediaEntry = ({ searchTerm }) => {
         };
 
         fetchData();
-    }, [searchTerm]);
+    }, [props.searchTerm]);
 
     return (
         <div>
