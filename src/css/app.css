@@ -14,6 +14,11 @@
     align-items: center;
 }
 
+.leaflet-control-container .leaflet-routing-container {
+    background-color: #333;
+    color: #fff;
+  }
+
 @media only screen and (max-width: 1200px) {
     .panel {
         width: 260px;
