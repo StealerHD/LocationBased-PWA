@@ -43,7 +43,7 @@ const HomePage = () => {
       <Link>Right Link</Link>
     </Toolbar>
     {/* Page content */}
-    <Block style={{ height: "100%"}}>
+    <Block>
       <Map
       startGeoData={defaultLocation}
       markerAddressCallback={handleMarkerAddress}/>
