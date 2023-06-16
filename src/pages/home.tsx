@@ -15,7 +15,7 @@ import WikipediaEntry from "../components/wiki";
 const HomePage = () => {
   const [wikiSearchTerm, setWikiSearchTerm]: any = useState(null)
 
-  const defaultLocation = [47.665628,9.447467]
+  const defaultLocation: [number, number] = [47.665628,9.447467]
 
   const handleMarkerAddress = (address: any) => {
     if (address.village != null) {

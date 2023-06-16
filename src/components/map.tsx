@@ -8,12 +8,9 @@ import {
 } from "react-leaflet";
 import axios from "axios";
 import RoutingMachine from "./mapRouting";
+import { Position } from "../js/position";
 
-export interface MapConfig {
-    center: any,
-    zoom: number,
-    style: any
-}
+
 
 export default function Map(props: any) {
   const [markers, setMarkers]: any = useState([]);
@@ -24,7 +21,7 @@ export default function Map(props: any) {
     opacity: 0.7,
   };
 
-  async function reverseGeocode(position: any) {
+  async function reverseGeocode(position: Position) {
     try {
       const response = await axios.get(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.lat}&lon=${position.lng}`
@@ -43,8 +40,8 @@ export default function Map(props: any) {
     return "";
   }
 
-  async function addMarker(position: any) {
-    var address = await reverseGeocode(position);
+  async function addMarker(position: Position) {
+    let address = await reverseGeocode(position);
 
     const newMarker: any = {
       id: Date.now(),
