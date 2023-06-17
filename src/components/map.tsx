@@ -1,4 +1,4 @@
-import React, { SetStateAction, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -7,19 +7,40 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import axios from "axios";
-import RoutingMachine from "./mapRouting";
 import { Position } from "../js/position";
-
-
+import RoutingMachineWrapper from "./mapRoutingWrapper";
 
 export default function Map(props: any) {
   const [markers, setMarkers]: any = useState([]);
+  const [startPoint, setStartPoint] = useState<Position >({ lat: 0, lng: 0});
+  const [endPoint, setEndPoint] = useState<Position | null>(null);
   // Options for the marker
   const markerOptions = {
     clickable: true,
     draggable: true,
     opacity: 0.7,
   };
+
+  useEffect(() => {
+    getLocationAndSetMarker();
+  }, []);
+
+  function getLocationAndSetMarker() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setStartPoint({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+        addMarker({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      });
+    } else {
+      console.log("Geolocation is not supported by this browser.");
+    }
+  }
 
   async function reverseGeocode(position: Position) {
     try {
@@ -28,11 +49,10 @@ export default function Map(props: any) {
       );
       const data = {
         addressJSON: response.data.address,
-        addressString: response.data.display_name
-      }
+        addressString: response.data.display_name,
+      };
       console.log(data);
-      return data
-	
+      return data;
     } catch (error) {
       console.error("Reverse geocoding error:", error);
     }
@@ -51,7 +71,8 @@ export default function Map(props: any) {
 
     // setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
     setMarkers(() => [newMarker]);
-    props.markerAddressCallback(newMarker.address.addressJSON)
+    props.markerAddressCallback(newMarker.address.addressJSON);
+    setEndPoint(position);
   }
 
   function AddMarkerOnClick() {
@@ -87,7 +108,12 @@ export default function Map(props: any) {
           </Popup>
         </Marker>
       ))}
-      <RoutingMachine/>
+       {endPoint && (
+        <RoutingMachineWrapper
+          start={startPoint}
+          end={endPoint}
+        />
+      )}
     </MapContainer>
   );
 }

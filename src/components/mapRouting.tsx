@@ -1,37 +1,72 @@
-import L from "leaflet";
-import { createControlComponent } from "@react-leaflet/core";
-import "leaflet-routing-machine";
+import { useEffect, useRef } from 'react';
+import { useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet-routing-machine';
+import { RoutingConfig } from '../js/routingConfig';
+import { Position } from '../js/position';
 
-const createRoutineMachineLayer = (props: any) => {
+function mapPositionToLatLng(position: Position | undefined): L.LatLng | undefined {
+  if (position) {
+    return new L.LatLng(position.lat, position.lng);
+  }
+  return undefined;
+}
 
-    const plan =  L.Routing.plan([
-        L.latLng(57.74, 11.94),
-        L.latLng(57.6792, 11.949)
-      ], {
-        draggableWaypoints: true
-      });
+function RoutingMachine({ start, end }: RoutingConfig) {
+  const map = useMap();
+  const routingControlRef = useRef<L.Routing.Control>();
 
-  const instance = L.Routing.control({
-    waypoints: [
-      L.latLng(47.665628, 9.447467),
-      L.latLng(47.665828, 9.447367)
-    ],
-    lineOptions: {
-      styles: [{ color: "#6FA1EC", weight: 4 }],
-      extendToWaypoints: true,
-      missingRouteTolerance: 1
-    },
-    plan: plan,
-    show: false,
-    addWaypoints: false,
-    routeWhileDragging: true,
-    fitSelectedRoutes: true,
-    showAlternatives: false
-  });
+  useEffect(() => {
+    const startPoint = mapPositionToLatLng(start);
+    const endPoint = mapPositionToLatLng(end);
 
-  return instance;
-};
+    if (!startPoint) {
+      return;
+    }
 
-const RoutingMachine = createControlComponent(createRoutineMachineLayer);
+    const plan = L.Routing.plan([
+      startPoint,
+      endPoint || startPoint,
+    ], {
+      draggableWaypoints: true
+    });
+
+    if (routingControlRef.current) {
+      map.removeControl(routingControlRef.current);
+    }
+
+    routingControlRef.current = L.Routing.control({
+      waypoints: [
+        startPoint,
+        endPoint || startPoint,
+      ],
+      lineOptions: {
+        styles: [{ color: "#6FA1EC", weight: 4 }],
+        extendToWaypoints: true,
+        missingRouteTolerance: 1
+      },
+      plan: plan,
+      show: false,
+      addWaypoints: false,
+      routeWhileDragging: true,
+      fitSelectedRoutes: true,
+      showAlternatives: false
+    }).addTo(map);
+
+    if (!end) {
+      routingControlRef.current.hide();
+    } else {
+      routingControlRef.current.show();
+    }
+
+    return () => {
+      if (routingControlRef.current) {
+        map.removeControl(routingControlRef.current);
+      }
+    };
+  }, [map, start, end]);
+
+  return null;
+}
 
 export default RoutingMachine;
