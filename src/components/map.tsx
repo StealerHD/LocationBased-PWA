@@ -21,6 +21,8 @@ export default function Map(props: any) {
     opacity: 0.7,
   };
 
+  console.log('Map Height:', props.mapHeight);
+
   useEffect(() => {
     getLocationAndSetMarker();
   }, []);
@@ -90,6 +92,7 @@ export default function Map(props: any) {
       center={props.startGeoData}
       zoom={14}
       // style={{ height: "75vh" }}
+      style={{ height: props.mapHeight }}
       id="map"
     >
       <TileLayer

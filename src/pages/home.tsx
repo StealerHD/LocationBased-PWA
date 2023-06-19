@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Page,
   Navbar,
@@ -8,14 +8,49 @@ import {
   Toolbar,
   Block, Panel,
 } from 'framework7-react';
+
 import Map from '../components/map';
 import WikipediaEntry from "../components/wiki";
+import Dom7 from 'dom7';
 
+const $$ = Dom7;
 
 const HomePage = () => {
   const [wikiSearchTerm, setWikiSearchTerm]: any = useState(null)
 
   const defaultLocation: [number, number] = [47.665628,9.447467]
+
+  const [mapHeight, setMapHeight] = useState('86vh');
+
+  const handleResize = () => {
+    const navbar = $$('.navbar');
+    const toolbar = $$('.toolbar');
+  
+    console.log('Navbar:', navbar); // Check if the element is found
+    console.log('Toolbar:', toolbar);
+  
+    const navbarHeight = navbar.height() || 0;
+    const toolbarHeight = toolbar.height() || 0;
+  
+    console.log('Navbar Height:', navbarHeight); // Check if the height is properly calculated
+    console.log('Toolbar Height:', toolbarHeight);
+  
+    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+    console.log('vh:', vh);
+    const calculatedMapHeight = `${vh - navbarHeight - toolbarHeight}px`;
+    console.log('calculatedMapHeight:', calculatedMapHeight);
+    setMapHeight(calculatedMapHeight);
+  };
+  
+
+  useEffect(() => {
+    setTimeout(handleResize, 0); // delay the initial call
+    window.addEventListener('resize', handleResize);
+  
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  
 
   const handleMarkerAddress = (address: any) => {
     if (address.village != null) {
@@ -43,8 +78,9 @@ const HomePage = () => {
       <Link>Right Link</Link>
     </Toolbar>
     {/* Page content */}
-    <Block>
+    <Block style={{ height: "200px" }}>
       <Map
+      mapHeight={mapHeight}
       startGeoData={defaultLocation}
       markerAddressCallback={handleMarkerAddress}/>
     </Block>
