@@ -9,17 +9,15 @@ import {
 import axios from "axios";
 import { Position } from "../js/position";
 import RoutingMachineWrapper from "./mapRoutingWrapper";
+import { NominatimResponse } from "../js/nominatimResponse";
+import { MapMarker } from "../js/mapMarker";
+import { MapProperties } from "../js/mapProperties";
 
-export default function Map(props: any) {
-  const [markers, setMarkers]: any = useState([]);
+
+export default function Map(props: MapProperties) {
+  const [markers, setMarkers] = useState<MapMarker[]>([]);
   const [startPoint, setStartPoint] = useState<Position >({ lat: 0, lng: 0});
   const [endPoint, setEndPoint] = useState<Position | null>(null);
-  // Options for the marker
-  const markerOptions = {
-    clickable: true,
-    draggable: true,
-    opacity: 0.7,
-  };
 
   console.log('Map Height:', props.mapHeight);
 
@@ -44,36 +42,31 @@ export default function Map(props: any) {
     }
   }
 
-  async function reverseGeocode(position: Position) {
+  async function reverseGeocode(position: Position): Promise<NominatimResponse> {
     try {
-      const response = await axios.get(
+      const response = await axios.get<NominatimResponse>(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.lat}&lon=${position.lng}`
       );
-      const data = {
-        addressJSON: response.data.address,
-        addressString: response.data.display_name,
-      };
-      console.log(data);
-      return data;
+      console.log(response.data);
+      return response.data;
     } catch (error) {
       console.error("Reverse geocoding error:", error);
+      throw error;
     }
-
-    return "";
   }
 
   async function addMarker(position: Position) {
-    let address = await reverseGeocode(position);
+    let response = await reverseGeocode(position);
 
-    const newMarker: any = {
+    const newMarker: MapMarker = {
       id: Date.now(),
       position,
-      address,
+      address: response,
     };
 
     // setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
     setMarkers(() => [newMarker]);
-    props.markerAddressCallback(newMarker.address.addressJSON);
+    props.markerAddressCallback(newMarker.address.address);
     setEndPoint(position);
   }
 
@@ -91,7 +84,6 @@ export default function Map(props: any) {
     <MapContainer
       center={props.startGeoData}
       zoom={14}
-      // style={{ height: "75vh" }}
       style={{ height: props.mapHeight }}
       id="map"
     >
@@ -101,11 +93,11 @@ export default function Map(props: any) {
       />
       <AddMarkerOnClick />
 
-      {markers.map((marker: any) => (
+      {markers.map((marker: MapMarker) => (
         <Marker key={marker.id} position={marker.position}>
           <Popup>
             <div>
-              <p>Adresse: {marker.address.addressString}</p>
+              <p>Adresse: {marker.address.display_name}</p>
               <p>Position: {marker.position.toString()}</p>
             </div>
           </Popup>

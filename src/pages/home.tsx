@@ -12,11 +12,12 @@ import {
 import Map from '../components/map';
 import WikipediaEntry from "../components/wiki";
 import Dom7 from 'dom7';
+import { Address } from '../js/address';
 
 const $$ = Dom7;
 
 const HomePage = () => {
-  const [wikiSearchTerm, setWikiSearchTerm]: any = useState(null)
+  const [wikiSearchTerm, setWikiSearchTerm] = useState<string>("");
 
   const defaultLocation: [number, number] = [47.665628,9.447467]
 
@@ -52,15 +53,14 @@ const HomePage = () => {
   
   
 
-  const handleMarkerAddress = (address: any) => {
-    if (address.village != null) {
+  const handleMarkerAddress = (address: Address) => {
+    if (address.village) {
       setWikiSearchTerm(address.village)
-    } else if (address.town != null) {
+    } else if (address.town) {
       setWikiSearchTerm(address.town)
-    } else if (address.city !=null) {
+    } else if (address.city) {
       setWikiSearchTerm(address.city)
-    }
-    else {
+    } else {
       setWikiSearchTerm("")
     }
     console.log(wikiSearchTerm)

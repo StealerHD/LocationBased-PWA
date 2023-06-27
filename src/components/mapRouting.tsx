@@ -53,12 +53,6 @@ function RoutingMachine({ start, end }: RoutingConfig) {
       showAlternatives: false
     }).addTo(map);
 
-    if (!end) {
-      routingControlRef.current.hide();
-    } else {
-      routingControlRef.current.show();
-    }
-
     return () => {
       if (routingControlRef.current) {
         map.removeControl(routingControlRef.current);
