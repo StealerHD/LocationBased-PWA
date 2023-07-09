@@ -1,25 +1,23 @@
 import React, { useState, useEffect } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMapEvents,
-} from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
 import axios from "axios";
 import { Position } from "../js/position";
 import RoutingMachineWrapper from "./mapRoutingWrapper";
 import { NominatimResponse } from "../js/nominatimResponse";
 import { MapMarker } from "../js/mapMarker";
 import { MapProperties } from "../js/mapProperties";
-
+import SimpleMarkers from "./SimpleMarkers";
+import { mapPositionToLatLng } from "../js/utils";
 
 export default function Map(props: MapProperties) {
+  const [addControl, setAddControl] = useState<boolean>(false);
+  const [deleteControl, setDeleteControl] = useState<boolean>(false);
   const [markers, setMarkers] = useState<MapMarker[]>([]);
-  const [startPoint, setStartPoint] = useState<Position >({ lat: 0, lng: 0});
+  const [startPoint, setStartPoint] = useState<Position>({ lat: 0, lng: 0 });
   const [endPoint, setEndPoint] = useState<Position | null>(null);
 
-  console.log('Map Height:', props.mapHeight);
+  console.log("Map Height:", props.mapHeight);
 
   useEffect(() => {
     getLocationAndSetMarker();
@@ -32,17 +30,21 @@ export default function Map(props: MapProperties) {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
+        setAddControl(true);
         addMarker({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
+        setAddControl(false);
       });
     } else {
       console.log("Geolocation is not supported by this browser.");
     }
   }
 
-  async function reverseGeocode(position: Position): Promise<NominatimResponse> {
+  async function reverseGeocode(
+    position: Position
+  ): Promise<NominatimResponse> {
     try {
       const response = await axios.get<NominatimResponse>(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.lat}&lon=${position.lng}`
@@ -55,29 +57,34 @@ export default function Map(props: MapProperties) {
     }
   }
 
-  async function addMarker(position: Position) {
-    let response = await reverseGeocode(position);
-
-    const newMarker: MapMarker = {
-      id: Date.now(),
-      position,
-      address: response,
-    };
-
-    // setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
-    setMarkers(() => [newMarker]);
-    props.markerAddressCallback(newMarker.address.address);
-    setEndPoint(position);
+  function latLngToPosition(latLng: L.LatLng): Position {
+    return { lat: latLng.lat, lng: latLng.lng };
   }
 
-  function AddMarkerOnClick() {
-    const map = useMapEvents({
-      click(e: any) {
-        addMarker(e.latlng);
-      },
-    });
+  async function addMarker(position: Position) {
+    if (addControl) {
+      let response = await reverseGeocode(position);
 
-    return null;
+      const newMarker: MapMarker = {
+        id: Date.now(),
+        position,
+        address: response,
+        leafLetMarker: new L.Marker(
+          mapPositionToLatLng(position) as L.LatLngExpression
+        ),
+      };
+
+      setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
+      props.markerAddressCallback(newMarker.address.address);
+      setEndPoint(position);
+    }
+  }
+
+  async function deleteMarker(marker: L.Marker) {
+    const markerToDelete = markers.find((m) => m.leafLetMarker === marker);
+    if (markerToDelete) {
+      setMarkers(markers.filter((m) => m.id !== markerToDelete.id));
+    }
   }
 
   return (
@@ -91,7 +98,17 @@ export default function Map(props: MapProperties) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <AddMarkerOnClick />
+      <SimpleMarkers
+        add_control={addControl}
+        setAddControl={setAddControl}
+        delete_control={deleteControl}
+        setDeleteControl={setDeleteControl}
+        onAddMarker={(marker) =>
+          addMarker(latLngToPosition(marker.getLatLng()))
+        }
+        onDeleteMarker={deleteMarker}
+        addMarker={addMarker}
+      />
 
       {markers.map((marker: MapMarker) => (
         <Marker key={marker.id} position={marker.position}>
@@ -103,12 +120,7 @@ export default function Map(props: MapProperties) {
           </Popup>
         </Marker>
       ))}
-       {endPoint && (
-        <RoutingMachineWrapper
-          start={startPoint}
-          end={endPoint}
-        />
-      )}
+      {endPoint && <RoutingMachineWrapper start={startPoint} end={endPoint} />}
     </MapContainer>
   );
 }

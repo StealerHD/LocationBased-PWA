@@ -3,14 +3,7 @@ import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-routing-machine';
 import { RoutingConfig } from '../js/routingConfig';
-import { Position } from '../js/position';
-
-function mapPositionToLatLng(position: Position | undefined): L.LatLng | undefined {
-  if (position) {
-    return new L.LatLng(position.lat, position.lng);
-  }
-  return undefined;
-}
+import { mapPositionToLatLng } from '../js/utils';
 
 function RoutingMachine({ start, end }: RoutingConfig) {
   const map = useMap();

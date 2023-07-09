@@ -22,6 +22,55 @@
     display: none;
   }
 
+
+  .add_marker_control {
+	background-image: url('/add_marker.png');
+	width: 22px;
+    height: 22px;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    display: block;
+    padding: 5px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
+    cursor: auto;
+    text-align: center;
+    background-color: #ffffff;
+}
+
+.add_marker_control:hover {
+	background-color: #f4f4f4;
+}
+
+.del_marker_control {
+	background-image: url('/del_marker.png');
+	width: 22px;
+    height: 22px;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    display: block;
+    padding: 5px;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
+    cursor: auto;
+    text-align: center;
+    background-color: #ffffff;
+}
+
+.del_marker_control:hover {
+	background-color: #f4f4f4;
+} 
+
+.add_marker_control.enabled,
+.del_marker_control.enabled {
+  background-color: #f00; 
+}
+
 @media only screen and (max-width: 1200px) {
     .panel {
         width: 260px;
