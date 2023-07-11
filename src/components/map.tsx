@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+} from "react-leaflet";
 import L from "leaflet";
 import axios from "axios";
 import { Position } from "../js/position";
@@ -7,36 +13,19 @@ import RoutingMachineWrapper from "./mapRoutingWrapper";
 import { NominatimResponse } from "../js/nominatimResponse";
 import { MapMarker } from "../js/mapMarker";
 import { MapProperties } from "../js/mapProperties";
-import SimpleMarkers from "./SimpleMarkers";
 import { mapPositionToLatLng } from "../js/utils";
+import SimpleMarkers from "./SimpleMarkers";
+import MapEffect from "./MapEffect";
 
 export default function Map(props: MapProperties) {
   const [markers, setMarkers] = useState<MapMarker[]>([]);
   const [startPoint, setStartPoint] = useState<Position>({ lat: 0, lng: 0 });
   const [endPoint, setEndPoint] = useState<Position | null>(null);
+  const [addMode, setAddMode] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(false);
+  const markerListRef = useRef<L.Marker[]>([]);
 
   console.log("Map Height:", props.mapHeight);
-
-  useEffect(() => {
-    getLocationAndSetMarker();
-  }, []);
-
-  function getLocationAndSetMarker() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setStartPoint({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-        addMarker({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-      });
-    } else {
-      console.log("Geolocation is not supported by this browser.");
-    }
-  }
 
   async function reverseGeocode(
     position: Position
@@ -53,34 +42,59 @@ export default function Map(props: MapProperties) {
     }
   }
 
-  function latLngToPosition(latLng: L.LatLng): Position {
-    return { lat: latLng.lat, lng: latLng.lng };
-  }
-
   async function addMarker(position: Position) {
-    // if (addControl || firstMarker) {
-      let response = await reverseGeocode(position);
+    let response = await reverseGeocode(position);
 
-      const newMarker: MapMarker = {
-        id: Date.now(),
-        position,
-        address: response,
-        leafLetMarker: new L.Marker(
-          mapPositionToLatLng(position) as L.LatLngExpression
-        ),
-      };
+    const newMarker: MapMarker = {
+      id: Date.now(),
+      position,
+      address: response,
+      leafLetMarker: new L.Marker(mapPositionToLatLng(position) as L.LatLng),
+    };
 
-      setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
-      props.markerAddressCallback(newMarker.address.address);
-      setEndPoint(position);
-    // }
+    // setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
+    setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
+    props.markerAddressCallback(newMarker.address.address);
+    // setEndPoint(position);
   }
 
-  async function deleteMarker(marker: L.Marker) {
-    const markerToDelete = markers.find((m) => m.leafLetMarker === marker);
-    if (markerToDelete) {
-      setMarkers(markers.filter((m) => m.id !== markerToDelete.id));
+  async function deleteMarkerFromMap(e: any) {
+    if (!deleteMode) return;
+    console.log("deleteMarkerFromMap", e);
+    const marker = markers.find((m) =>
+      (mapPositionToLatLng(m.position) as L.LatLng).equals(e.latlng)
+    );
+    console.log('marker: ', marker);
+    if (marker) {
+      setMarkers(markers.filter((m) => m !== marker));
+      console.log('markers: ', markers);
     }
+  }
+
+  function EnableAddMode() {
+    if (addMode) {
+      useMapEvents({
+        click(e: any) {
+          addMarker(e.latlng);
+        },
+      });
+
+      // map.on('click', addMarkerToMap);
+    }
+    return null;
+  }
+
+  function EnableDeleteMode() {
+    console.log("EnableDeleteMode", deleteMode);
+    if (deleteMode) {
+      useMapEvents({
+        click(e: any) {
+          deleteMarkerFromMap(e.latlng);
+        },
+      });
+    }
+
+    return null;
   }
 
   return (
@@ -94,28 +108,35 @@ export default function Map(props: MapProperties) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <MapEffect setStartPoint={setStartPoint} addMarker={addMarker} />
       <SimpleMarkers
         add_control={true}
         delete_control={true}
-        onAddMarker={(marker) => {
-          addMarker(latLngToPosition(marker.getLatLng()));
-        }}
-        onDeleteMarker={deleteMarker}
         addMarker={addMarker}
-        markerList={markers}
+        refAddMode={setAddMode}
+        refDeleteMode={setDeleteMode}
       />
-
-      {markers.map((marker: MapMarker) => (
-        <Marker key={marker.id} position={marker.position}>
-          <Popup>
-            <div>
-              <p>Adresse: {marker.address.display_name}</p>
-              <p>Position: {marker.position.toString()}</p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-      {endPoint && <RoutingMachineWrapper start={startPoint} end={endPoint} />}
+      <EnableAddMode />
+      <EnableDeleteMode />
+      {markers.map((marker: MapMarker) => {
+        console.log("marker.position: ", marker.position); // <- add this line
+        return (
+          <Marker key={marker.id} position={marker.position}>
+            <Popup>
+              <div>
+                <p>Adresse: {marker.address.display_name}</p>
+                <p>Position: {marker.position.toString()}</p>
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
+      {/* {endPoint && (
+        <RoutingMachineWrapper
+          start={startPoint}
+          end={endPoint}
+        />
+      )} */}
     </MapContainer>
   );
 }
