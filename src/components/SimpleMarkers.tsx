@@ -1,57 +1,93 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L, { LeafletMouseEvent } from 'leaflet';
-import { useMap } from 'react-leaflet';
+import { useMap, useMapEvents } from 'react-leaflet';
+import { mapPositionToLatLng } from "../js/utils";
+import { Position } from '../js/position';
+import { MapMarker } from '../js/mapMarker';
 
 type SimpleMarkersProps = {
   add_control: boolean;
-  setAddControl: (value: boolean) => void;
   delete_control: boolean;
-  setDeleteControl: (value: boolean) => void;
   allow_popup?: boolean;
   marker_icon?: L.Icon;
   marker_draggable?: boolean;
   onAddMarker?: (marker: L.Marker) => void;
   onDeleteMarker?: (marker: L.Marker) => void;
-  addMarker: (latLng: L.LatLng) => void;  // added this line
+  addMarker: (position: Position) => void;
+  markerList: MapMarker[];
 };
 
 const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
-  add_control,
-  setAddControl,
-  delete_control,
-  setDeleteControl,
+  add_control = true,
+  delete_control = true,
   allow_popup = true,
   marker_icon = undefined,
   marker_draggable = false,
   onAddMarker = undefined,
   onDeleteMarker = undefined,
-  addMarker,  // added this line
+  addMarker,
+  markerList = [] 
 }) => {
   const map = useMap();
   const markerListRef = useRef<L.Marker[]>([]);
   const addDivRef = useRef<HTMLDivElement | null>(null);
   const deleteDivRef = useRef<HTMLDivElement | null>(null);
+  const [addMode, setAddMode] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(false);
+
+  function EnableAddMode() {
+    if (addMode) {
+      useMapEvents({
+        click(e: any) {
+          addMarkerToMap(e);
+        }
+      });
+
+
+      // map.on('click', addMarkerToMap);
+    } else {
+      map.off('click', addMarkerToMap);
+    }
+  }
+
+  function EnableDeleteMode() {
+    if (deleteMode) {
+      useMapEvents({
+        click(e: any) {
+          deleteMarkerFromMap(e);
+        }
+      });
+      // map.on('click', deleteMarkerFromMap);
+    } else {
+      map.off('click', deleteMarkerFromMap);
+    }
+  }
+
+  function latLngToPosition(latLng: L.LatLng): Position {
+    return { lat: latLng.lat, lng: latLng.lng };
+  }
 
   const addMarkerToMap = (e: LeafletMouseEvent) => {
-    if (!add_control) {
+    if (addMode) {
       return;
     }
 
-    addMarker(e.latlng);  // updated this line
-
-    const marker = L.marker(e.latlng, { draggable: marker_draggable, icon: marker_icon });
-    marker.addTo(map);
-    if (allow_popup) {
-      const popupContent = "You clicked on the map at " + e.latlng.toString();
-      const thePopup = L.popup({ maxWidth: 160, closeButton: false });
-      thePopup.setContent(popupContent);
-      marker.bindPopup(thePopup).openPopup();
-    }
-    if (onAddMarker) {
-      onAddMarker(marker);
-    }
-    markerListRef.current.push(marker);
-    setAddControl(false);
+     addMarker(latLngToPosition(e.latlng));
+    markerListRef.current.push(markerList[markerList.length - 1].leafLetMarker);
+    // const marker = L.marker(e.latlng, { draggable: marker_draggable, icon: marker_icon });
+    // marker.addTo(map);
+    // if (allow_popup) {
+    //   const popupContent = "You clicked on the map at " + e.latlng.toString();
+    //   const thePopup = L.popup({ maxWidth: 160, closeButton: false });
+    //   thePopup.setContent(popupContent);
+    //   marker.bindPopup(thePopup).openPopup();
+    // }
+    // if (onAddMarker) {
+    //   onAddMarker(marker);
+    // }
+    // markerListRef.current.push(marker);
+    // setAddMode(false);
+    //setAddControl(false);
   };
 
   const deleteMarkerFromMap = (e: LeafletMouseEvent) => {
@@ -63,24 +99,29 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
       map.removeLayer(marker);
       markerListRef.current = markerListRef.current.filter(m => m !== marker);
     }
-    setDeleteControl(false);
+    setDeleteMode(false);
+    // setDeleteControl(false);
   };
 
-  useEffect(() => {
-    if (add_control) {
-      map.on('click', addMarkerToMap);
-    } else {
-      map.off('click', addMarkerToMap);
-    }
-  }, [add_control]);
+  // useEffect(() => {
+  //   if (addMode) {
+  //     useMapEvent('click', addMarkerToMap);
 
-  useEffect(() => {
-    if (delete_control) {
-      map.on('click', deleteMarkerFromMap);
-    } else {
-      map.off('click', deleteMarkerFromMap);
-    }
-  }, [delete_control]);
+
+  //     // map.on('click', addMarkerToMap);
+  //   } else {
+  //     map.off('click', addMarkerToMap);
+  //   }
+  // }, [addMode]);
+
+  // useEffect(() => {
+  //   if (deleteMode) {
+  //     useMapEvent('click', deleteMarkerFromMap);
+  //     // map.on('click', deleteMarkerFromMap);
+  //   } else {
+  //     map.off('click', deleteMarkerFromMap);
+  //   }
+  // }, [deleteMode]);
 
   useEffect(() => {
     const markerControlDiv = L.control({ position: 'topleft' });
@@ -88,11 +129,11 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
       const containerDiv = L.DomUtil.create('div', 'marker-controls');
 
       const addDiv = L.DomUtil.create('div', 'add_marker_control', containerDiv);
-      addDiv.style.backgroundColor = add_control ? 'green' : '';
+      addDiv.style.backgroundColor = addMode ? 'green' : '';
       addDivRef.current = addDiv;
 
       const deleteDiv = L.DomUtil.create('div', 'del_marker_control', containerDiv);
-      deleteDiv.style.backgroundColor = delete_control ? 'red' : '';
+      deleteDiv.style.backgroundColor = deleteMode ? 'red' : '';
       deleteDivRef.current = deleteDiv;
 
       return containerDiv;
@@ -104,17 +145,19 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
   useEffect(() => {
     if (addDivRef.current) {
       addDivRef.current.onclick = () => {
-        setAddControl(!add_control);
+        setAddMode(!addMode);
+        // setAddControl(!add_control);
       };
-      addDivRef.current.style.backgroundColor = add_control ? 'green' : '';
+      addDivRef.current.style.backgroundColor = addMode ? 'green' : '';
     }
     if (deleteDivRef.current) {
       deleteDivRef.current.onclick = () => {
-        setDeleteControl(!delete_control);
+        setDeleteMode(!deleteMode);
+        // setDeleteControl(!delete_control);
       };
-      deleteDivRef.current.style.backgroundColor = delete_control ? 'red' : '';
+      deleteDivRef.current.style.backgroundColor = deleteMode ? 'red' : '';
     }
-  }, [add_control, delete_control]);
+  }, [addMode, deleteMode]);
 
   return null;
 };

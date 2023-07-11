@@ -11,8 +11,6 @@ import SimpleMarkers from "./SimpleMarkers";
 import { mapPositionToLatLng } from "../js/utils";
 
 export default function Map(props: MapProperties) {
-  const [addControl, setAddControl] = useState<boolean>(false);
-  const [deleteControl, setDeleteControl] = useState<boolean>(false);
   const [markers, setMarkers] = useState<MapMarker[]>([]);
   const [startPoint, setStartPoint] = useState<Position>({ lat: 0, lng: 0 });
   const [endPoint, setEndPoint] = useState<Position | null>(null);
@@ -30,12 +28,10 @@ export default function Map(props: MapProperties) {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
-        setAddControl(true);
         addMarker({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
-        setAddControl(false);
       });
     } else {
       console.log("Geolocation is not supported by this browser.");
@@ -62,7 +58,7 @@ export default function Map(props: MapProperties) {
   }
 
   async function addMarker(position: Position) {
-    if (addControl) {
+    // if (addControl || firstMarker) {
       let response = await reverseGeocode(position);
 
       const newMarker: MapMarker = {
@@ -77,7 +73,7 @@ export default function Map(props: MapProperties) {
       setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
       props.markerAddressCallback(newMarker.address.address);
       setEndPoint(position);
-    }
+    // }
   }
 
   async function deleteMarker(marker: L.Marker) {
@@ -99,15 +95,14 @@ export default function Map(props: MapProperties) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SimpleMarkers
-        add_control={addControl}
-        setAddControl={setAddControl}
-        delete_control={deleteControl}
-        setDeleteControl={setDeleteControl}
-        onAddMarker={(marker) =>
-          addMarker(latLngToPosition(marker.getLatLng()))
-        }
+        add_control={true}
+        delete_control={true}
+        onAddMarker={(marker) => {
+          addMarker(latLngToPosition(marker.getLatLng()));
+        }}
         onDeleteMarker={deleteMarker}
         addMarker={addMarker}
+        markerList={markers}
       />
 
       {markers.map((marker: MapMarker) => (
