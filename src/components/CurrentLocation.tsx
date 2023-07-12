@@ -2,14 +2,15 @@ import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import { Position } from "../js/position";
 
-type MapEffectProps = {
+type CurrentLocationProps = {
   setStartPoint: (pos: Position) => void;
-  addMarker: (pos: Position) => Promise<void>;
+  addMarker: (pos: Position, id?: string) => Promise<void>;
 };
 
-const MapEffect: React.FC<MapEffectProps> = ({ setStartPoint, addMarker }) => {
+const CurrentLocation: React.FC<CurrentLocationProps> = ({ setStartPoint, addMarker }) => {
   const map = useMap();
   const didRun = useRef(false);
+  const startPointMarkerId: string = 'startPointMarker';
 
   useEffect(() => {
     if (didRun.current) return;
@@ -20,7 +21,7 @@ const MapEffect: React.FC<MapEffectProps> = ({ setStartPoint, addMarker }) => {
           lng: position.coords.longitude,
         };
         setStartPoint(pos);
-        addMarker(pos).then(() => {
+        addMarker(pos, startPointMarkerId).then(() => {
           map.flyTo([pos.lat, pos.lng], 14);
         });
       });
@@ -35,4 +36,4 @@ const MapEffect: React.FC<MapEffectProps> = ({ setStartPoint, addMarker }) => {
   return null;
 };
 
-export default MapEffect;
+export default CurrentLocation;

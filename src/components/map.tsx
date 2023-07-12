@@ -8,6 +8,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import axios from "axios";
+import { v4 as uuidv4 } from 'uuid';
 import { Position } from "../js/position";
 import RoutingMachineWrapper from "./mapRoutingWrapper";
 import { NominatimResponse } from "../js/nominatimResponse";
@@ -15,7 +16,7 @@ import { MapMarker } from "../js/mapMarker";
 import { MapProperties } from "../js/mapProperties";
 import { mapPositionToLatLng } from "../js/utils";
 import SimpleMarkers from "./SimpleMarkers";
-import MapEffect from "./MapEffect";
+import CurrentLocation from "./CurrentLocation";
 
 export default function Map(props: MapProperties) {
   const [markers, setMarkers] = useState<MapMarker[]>([]);
@@ -23,7 +24,7 @@ export default function Map(props: MapProperties) {
   const [endPoint, setEndPoint] = useState<Position | null>(null);
   const [addMode, setAddMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
-  const markerListRef = useRef<L.Marker[]>([]);
+  const startPointMarkerId: string = 'startPointMarker';
 
   console.log("Map Height:", props.mapHeight);
 
@@ -42,11 +43,12 @@ export default function Map(props: MapProperties) {
     }
   }
 
-  async function addMarker(position: Position) {
+  async function addMarker(position: Position, id?: string) {
     let response = await reverseGeocode(position);
+    const markerId = id || uuidv4();
 
     const newMarker: MapMarker = {
-      id: Date.now(),
+      id: markerId,
       position,
       address: response,
       leafLetMarker: new L.Marker(mapPositionToLatLng(position) as L.LatLng),
@@ -58,17 +60,11 @@ export default function Map(props: MapProperties) {
     // setEndPoint(position);
   }
 
-  async function deleteMarkerFromMap(e: any) {
+  function deleteMarkerFromMap(id: string) {
     if (!deleteMode) return;
-    console.log("deleteMarkerFromMap", e);
-    const marker = markers.find((m) =>
-      (mapPositionToLatLng(m.position) as L.LatLng).equals(e.latlng)
-    );
-    console.log('marker: ', marker);
-    if (marker) {
-      setMarkers(markers.filter((m) => m !== marker));
-      console.log('markers: ', markers);
-    }
+    if (id === startPointMarkerId) return;
+
+    setMarkers(prevMarkers => prevMarkers.filter(marker => marker.id !== id));
   }
 
   function EnableAddMode() {
@@ -78,22 +74,8 @@ export default function Map(props: MapProperties) {
           addMarker(e.latlng);
         },
       });
-
-      // map.on('click', addMarkerToMap);
     }
-    return null;
-  }
-
-  function EnableDeleteMode() {
-    console.log("EnableDeleteMode", deleteMode);
-    if (deleteMode) {
-      useMapEvents({
-        click(e: any) {
-          deleteMarkerFromMap(e.latlng);
-        },
-      });
-    }
-
+    
     return null;
   }
 
@@ -108,20 +90,28 @@ export default function Map(props: MapProperties) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <MapEffect setStartPoint={setStartPoint} addMarker={addMarker} />
+      <CurrentLocation 
+      setStartPoint={setStartPoint} 
+      addMarker={addMarker} />
       <SimpleMarkers
         add_control={true}
         delete_control={true}
-        addMarker={addMarker}
         refAddMode={setAddMode}
         refDeleteMode={setDeleteMode}
       />
       <EnableAddMode />
-      <EnableDeleteMode />
       {markers.map((marker: MapMarker) => {
-        console.log("marker.position: ", marker.position); // <- add this line
         return (
-          <Marker key={marker.id} position={marker.position}>
+          <Marker 
+          key={marker.id}
+           position={marker.position}
+           eventHandlers={{
+            click: () => {
+              if (deleteMode) {
+                deleteMarkerFromMap(marker.id);
+              }
+            },
+          }}>
             <Popup>
               <div>
                 <p>Adresse: {marker.address.display_name}</p>
@@ -131,12 +121,12 @@ export default function Map(props: MapProperties) {
           </Marker>
         );
       })}
-      {/* {endPoint && (
+      {endPoint && (
         <RoutingMachineWrapper
           start={startPoint}
           end={endPoint}
         />
-      )} */}
+      )}
     </MapContainer>
   );
 }

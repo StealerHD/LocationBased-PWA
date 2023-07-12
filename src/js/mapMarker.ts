@@ -4,7 +4,7 @@ import L from 'leaflet';
 
 
 export type MapMarker  = {
-  id: number;
+  id: string;
   position: Position;
   address: NominatimResponse;
   leafLetMarker: L.Marker;

@@ -1,9 +1,9 @@
+/**
+ * Inspired by https://github.com/jdomingu/Leaflet.SimpleMarkers/blob/master/lib/Control.SimpleMarkers.js
+ */
 import React, { useEffect, useRef, useState } from "react";
-import L, { LeafletMouseEvent } from "leaflet";
-import { useMap, useMapEvents } from "react-leaflet";
-import { mapPositionToLatLng } from "../js/utils";
-import { Position } from "../js/position";
-import { MapMarker } from "../js/mapMarker";
+import L from "leaflet";
+import { useMap } from "react-leaflet";
 
 type SimpleMarkersProps = {
   add_control: boolean;
@@ -11,12 +11,8 @@ type SimpleMarkersProps = {
   allow_popup?: boolean;
   marker_icon?: L.Icon;
   marker_draggable?: boolean;
-  onAddMarker?: (marker: L.Marker) => void;
-  onDeleteMarker?: (marker: L.Marker) => void;
-  addMarker: (position: Position) => void;
-  refAddMode?: React.Dispatch<boolean>;
-  refDeleteMode?: React.Dispatch<boolean>;
-  // markerList: MapMarker[];
+  refAddMode?: React.Dispatch<React.SetStateAction<boolean>>;
+  refDeleteMode?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
@@ -25,9 +21,6 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
   allow_popup = true,
   marker_icon = undefined,
   marker_draggable = false,
-  onAddMarker = undefined,
-  onDeleteMarker = undefined,
-  addMarker,
   refAddMode = undefined,
   refDeleteMode = undefined,
 }) => {
@@ -37,8 +30,20 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
   const [addMode, setAddMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
 
+  const addModeRef = useRef(addMode);
+  const deleteModeRef = useRef(deleteMode);
+
+  useEffect(() => {
+    addModeRef.current = addMode;
+  }, [addMode]);
+
+  useEffect(() => {
+    deleteModeRef.current = deleteMode;
+  }, [deleteMode]);
+
   useEffect(() => {
     const markerControlDiv = L.control({ position: "topleft" });
+
     markerControlDiv.onAdd = () => {
       const containerDiv = L.DomUtil.create("div", "marker-controls");
 
@@ -47,7 +52,7 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
         "add_marker_control",
         containerDiv
       );
-      addDiv.style.backgroundColor = addMode ? "green" : "";
+      addDiv.dataset.selected = addModeRef.current ? "true" : "false";
       addDivRef.current = addDiv;
 
       const deleteDiv = L.DomUtil.create(
@@ -55,32 +60,37 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
         "del_marker_control",
         containerDiv
       );
-      deleteDiv.style.backgroundColor = deleteMode ? "red" : "";
+      deleteDiv.dataset.selected = deleteModeRef.current ? "true" : "false";
       deleteDivRef.current = deleteDiv;
 
       return containerDiv;
     };
 
     map.addControl(markerControlDiv);
-  }, [map]);
+
+    return () => {
+      map.removeControl(markerControlDiv);
+    };
+  }, [map, addMode, deleteMode]);
 
   useEffect(() => {
     if (addDivRef.current) {
       addDivRef.current.onclick = () => {
         setAddMode(!addMode);
         refAddMode && refAddMode(!addMode);
+        setDeleteMode(false);
         refDeleteMode && refDeleteMode(false);
+        addDivRef.current!.dataset.selected = addMode ? "true" : "false";
       };
-      addDivRef.current.style.backgroundColor = addMode ? "green" : "";
     }
     if (deleteDivRef.current) {
       deleteDivRef.current.onclick = () => {
         setDeleteMode(!deleteMode);
         refDeleteMode && refDeleteMode(!deleteMode);
+        setAddMode(false);
         refAddMode && refAddMode(false);
-        // setDeleteControl(!delete_control);
+        deleteDivRef.current!.dataset.selected = deleteMode ? "true" : "false";
       };
-      deleteDivRef.current.style.backgroundColor = deleteMode ? "red" : "";
     }
   }, [addMode, deleteMode]);
 

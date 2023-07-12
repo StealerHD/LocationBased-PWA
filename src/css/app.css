@@ -66,10 +66,16 @@
 	background-color: #f4f4f4;
 } 
 
-.add_marker_control.enabled,
-.del_marker_control.enabled {
-  background-color: #f00; 
-}
+.add_marker_control[data-selected="true"] {
+    background-color: green;
+  }
+  
+  .del_marker_control[data-selected="true"] {
+    background-color: red;
+  }
+  
+
+
 
 @media only screen and (max-width: 1200px) {
     .panel {
