@@ -17,6 +17,7 @@ import { MapProperties } from "../js/mapProperties";
 import { mapPositionToLatLng } from "../js/utils";
 import SimpleMarkers from "./SimpleMarkers";
 import CurrentLocation from "./CurrentLocation";
+import Search from "./Search";
 
 export default function Map(props: MapProperties) {
   const [markers, setMarkers] = useState<MapMarker[]>([]);
@@ -100,6 +101,7 @@ export default function Map(props: MapProperties) {
         refDeleteMode={setDeleteMode}
       />
       <EnableAddMode />
+      <Search />
       {markers.map((marker: MapMarker) => {
         return (
           <Marker 
