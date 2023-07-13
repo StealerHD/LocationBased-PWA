@@ -76,8 +76,10 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
   useEffect(() => {
     if (addDivRef.current) {
       addDivRef.current.onclick = () => {
-        setAddMode(!addMode);
-        refAddMode && refAddMode(!addMode);
+        setTimeout(() => {
+          setAddMode(!addMode);
+          refAddMode && refAddMode(!addMode);
+        }, 25);
         setDeleteMode(false);
         refDeleteMode && refDeleteMode(false);
         addDivRef.current!.dataset.selected = addMode ? "true" : "false";

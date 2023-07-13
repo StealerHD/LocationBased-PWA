@@ -1,115 +1,152 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-    useMap
-  } from "react-leaflet";
-  import L from "leaflet";
+import { useMap } from "react-leaflet";
+import L from "leaflet";
 import axios from "axios";
 import { Position } from "../js/position";
 import { NominatimResponse } from "../js/nominatimResponse";
 
-type SearchProps = {
+type SearchProps = {};
 
-};
+const Search: React.FC<SearchProps> = ({}) => {
+  const map = useMap();
+  const serachContainerRef = useRef<HTMLDivElement | null>(null);
+  const searchboxWrapperRef = useRef<HTMLDivElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const searchButtonRef = useRef<HTMLButtonElement | null>(null);
 
-const Search: React.FC<SearchProps> = ({ 
+  const [collapsed, setCollapsed] = useState(true);
 
-}) => {   
-    const map = useMap();
-    const serachContainerRef = useRef<HTMLDivElement | null>(null);
-    const searchboxWrapperRef = useRef<HTMLDivElement | null>(null);
-    const searchInputRef = useRef<HTMLInputElement | null>(null);
-    const searchButtonRef = useRef<HTMLButtonElement | null>(null);
-    const autocompletionRef = useRef<HTMLUListElement | null>(null);
+  useEffect(() => {
+    const searchControlDiv = L.control({ position: "topright" });
 
-    const [collapsed, setCollapsed] = useState(false);
+    searchControlDiv.onAdd = () => {
+      const containerDiv = L.DomUtil.create(
+        "div",
+        "leaflet-control leaflet-searchbox-container"
+      );
+      const searchBoxWrapper = L.DomUtil.create(
+        "div",
+        "leaflet-searchbox-wrapper",
+        containerDiv
+      );
+      const searchInput = L.DomUtil.create(
+        "input",
+        "leaflet-searchbox leaflet-searchbox-left",
+        searchBoxWrapper
+      );
+      searchInput.type = "text";
+      searchInput.placeholder = "Search...";
+      searchInput.id = "searchInput";
 
+      const searchButton = L.DomUtil.create(
+        "button",
+        "leaflet-searchbox-button leaflet-searchbox-button-right",
+        searchBoxWrapper
+      );
+      searchButton.type = "button";
+      const searchIcon = L.DomUtil.create(
+        "img",
+        "leaflet-searchbox-icon",
+        searchButton
+      );
+      searchIcon.src = "/search_icon.png";
 
-    useEffect(() => {
-        const searchControlDiv = L.control({ position: "topright" });
+      searchInputRef.current = searchInput;
+      searchButtonRef.current = searchButton;
+      searchboxWrapperRef.current = searchBoxWrapper;
+      serachContainerRef.current = containerDiv;
 
-        searchControlDiv.onAdd = () => {
-            const containerDiv = L.DomUtil.create('div', 'leaflet-control leaflet-searchbox-container');
-            const searchBoxWrapper = L.DomUtil.create('div', 'leaflet-searchbox-wrapper', containerDiv);
-            const searchInput = L.DomUtil.create('input', 'leaflet-searchbox leaflet-searchbox-left', searchBoxWrapper);
-            searchInput.type = 'text';
-            searchInput.placeholder = 'Search...';
-            searchInput.id = "searchInput";
+      if (collapsed) {
+        hide();
+      }
 
-            const searchButton = L.DomUtil.create('button', 'leaflet-searchbox-button leaflet-searchbox-button-right', searchBoxWrapper);
-            searchButton.type = 'button';
-            const searchIcon = L.DomUtil.create('img', 'leaflet-searchbox-icon', searchButton);
-            searchIcon.src = "/search_icon.png";
+      return containerDiv;
+    };
 
-            const autoComplete = L.DomUtil.create('ul', 'leaflet-searchbox-autocomplete', containerDiv);
+    map.addControl(searchControlDiv);
 
-            searchInputRef.current = searchInput;
-            searchButtonRef.current = searchButton;
-            searchboxWrapperRef.current = searchBoxWrapper;
-            autocompletionRef.current = autoComplete;
-            serachContainerRef.current = containerDiv;
+    return () => {
+      map.removeControl(searchControlDiv);
+    };
+  }, [map]);
 
-            return containerDiv;
-        };
+  function show() {
+    serachContainerRef.current?.classList.remove("collapsed");
+    searchInputRef.current?.focus();
+    setTimeout(() => {
+      setCollapsed(false);
+    }, 600);
+  }
 
-        map.addControl(searchControlDiv);
+  function hide() {
+    serachContainerRef.current?.classList.add("collapsed");
+    if (searchInputRef.current) {
+      searchInputRef.current.blur();
+      searchInputRef.current!.value = "";
+    }
 
-        return () => {
-            map.removeControl(searchControlDiv);
-        };
+    if (searchButtonRef.current) {
+      searchButtonRef.current.blur();
+    }
 
-    }, [map]);
+    setTimeout(() => {
+      setCollapsed(true);
+    }, 600);
+  }
 
-
-    useEffect(() => {
-        if (collapsed && serachContainerRef.current) {
-            serachContainerRef.current?.classList.add('collapsed');
-            if (searchInputRef.current) {
-                searchInputRef.current.blur();
-            }
-
-            if (searchButtonRef.current) {
-                searchButtonRef.current.blur();
-            }
-
-            setTimeout(() => {
-                setCollapsed(true);
-            }, 600);
+  useEffect(() => {
+    if (searchButtonRef.current) {
+      searchButtonRef.current.addEventListener("click", () => {
+        if (collapsed) {
+          show();
         } else {
-            serachContainerRef.current?.classList.remove('collapsed');
-            setTimeout(() => {
-                setCollapsed(false);
-            }, 600);
+          hide();
         }
-    }, [collapsed]);
+      });
+    }
+  }, [collapsed]);
 
-    useEffect(() => {
-        if (searchButtonRef.current && searchInputRef.current) {
-            searchButtonRef.current.addEventListener('click', () => {
-                const searchValue = searchInputRef.current?.value;
-                if (searchValue) {
-                    axios.get<NominatimResponse>(`https://nominatim.openstreetmap.org/search?format=json&q=${searchValue}`)
-                    .then(response => {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Enter") {
+            const searchValue = searchInputRef.current?.value;
+            if (searchValue) {
+                axios
+                    .get<NominatimResponse>(`https://nominatim.openstreetmap.org/search?format=json&q=${searchValue}`)
+                    .then((response) => {
                         const nominatimResponse: any = response.data;
                         if (nominatimResponse.length > 0) {
                             const firstResult = nominatimResponse[0];
                             const position: Position = {
                                 lat: parseFloat(firstResult.lat),
-                                lng: parseFloat(firstResult.lon)
+                                lng: parseFloat(firstResult.lon),
                             };
-                            map.setView(position, 15);
+
+                            map.flyTo(position, 16);   
                         }
 
-                        searchInputRef.current!.value = '';
+                        searchInputRef.current!.value = "";
                     })
-                    .catch(error => {
+                    .catch((error) => {
                         console.error(error);
                     });
-                }
-            });
+            }
         }
-    }, []);
+    };
 
-    return null;
+    if (searchInputRef.current) {
+        searchInputRef.current.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+        if (searchInputRef.current) {
+            searchInputRef.current.removeEventListener('keydown', handleKeyDown);
+        }
+    };
+}, []);
+
+
+  return null;
 };
 
 export default Search;
