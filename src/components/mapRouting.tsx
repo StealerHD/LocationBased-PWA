@@ -12,46 +12,50 @@ function RoutingMachine({ start, end }: RoutingConfig) {
   useEffect(() => {
     const startPoint = mapPositionToLatLng(start);
     const endPoint = mapPositionToLatLng(end);
-
+  
     if (!startPoint) {
       return;
     }
-
-    const plan = L.Routing.plan([
-      startPoint,
-      endPoint || startPoint,
-    ], {
-      draggableWaypoints: true
-    });
-
+  
     if (routingControlRef.current) {
       map.removeControl(routingControlRef.current);
+      routingControlRef.current = undefined;
     }
-
-    routingControlRef.current = L.Routing.control({
-      waypoints: [
+  
+    if (endPoint) {
+      const plan = L.Routing.plan([
         startPoint,
-        endPoint || startPoint,
-      ],
-      lineOptions: {
-        styles: [{ color: "#6FA1EC", weight: 4 }],
-        extendToWaypoints: true,
-        missingRouteTolerance: 1
-      },
-      plan: plan,
-      show: false,
-      addWaypoints: false,
-      routeWhileDragging: true,
-      fitSelectedRoutes: true,
-      showAlternatives: false
-    }).addTo(map);
-
+        endPoint,
+      ], {
+        draggableWaypoints: true
+      });
+  
+      routingControlRef.current = L.Routing.control({
+        waypoints: [
+          startPoint,
+          endPoint,
+        ],
+        lineOptions: {
+          styles: [{ color: "#6FA1EC", weight: 4 }],
+          extendToWaypoints: true,
+          missingRouteTolerance: 1
+        },
+        plan: plan,
+        show: false,
+        addWaypoints: false,
+        routeWhileDragging: true,
+        fitSelectedRoutes: true,
+        showAlternatives: false
+      }).addTo(map);
+    }
+  
     return () => {
       if (routingControlRef.current) {
         map.removeControl(routingControlRef.current);
       }
     };
   }, [map, start, end]);
+  
 
   return null;
 }

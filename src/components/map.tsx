@@ -64,6 +64,15 @@ export default function Map(props: MapProperties) {
   function deleteMarkerFromMap(id: string) {
     if (!deleteMode) return;
     if (id === startPointMarkerId) return;
+    console.log("Deleting marker with id:", id);
+    const markerToDelete = markers.find(marker => marker.id === id);
+    console.log("Deleting marker:", markerToDelete);
+    if (markerToDelete 
+      && markerToDelete.position.lat === endPoint?.lat 
+      && markerToDelete.position.lng === endPoint?.lng) {
+        console.log("Deleted marker was the end point. Resetting end point.");
+      setEndPoint(null);
+    }
 
     setMarkers(prevMarkers => prevMarkers.filter(marker => marker.id !== id));
   }
@@ -117,7 +126,8 @@ export default function Map(props: MapProperties) {
             <Popup>
               <div>
                 <p>Adresse: {marker.address.display_name}</p>
-                <p>Position: {marker.position.toString()}</p>
+                {/* <p>Position: {marker.position.toString()}</p> */}
+                <button onClick={() => setEndPoint(marker.position)}>Calculate route for this position</button>
               </div>
             </Popup>
           </Marker>

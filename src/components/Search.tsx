@@ -121,7 +121,7 @@ const Search: React.FC<SearchProps> = ({}) => {
                                 lat: parseFloat(firstResult.lat),
                                 lng: parseFloat(firstResult.lon),
                             };
-
+                            setTimeout(hide, 35);
                             map.flyTo(position, 16);   
                         }
 
