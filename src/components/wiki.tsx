@@ -26,6 +26,8 @@ const WikipediaEntry = (props: any) => {
                 }
             } catch (error) {
                 console.error('Fehler beim Abrufen des Wikipedia-Eintrags:', error);
+                setContent("No Wiki entry found!")
+                setImage(null);
             }
         };
 

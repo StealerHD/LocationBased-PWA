@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -8,7 +8,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import axios from "axios";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import { Position } from "../js/position";
 import RoutingMachineWrapper from "./mapRoutingWrapper";
 import { NominatimResponse } from "../js/nominatimResponse";
@@ -18,6 +18,7 @@ import { mapPositionToLatLng } from "../js/utils";
 import SimpleMarkers from "./SimpleMarkers";
 import CurrentLocation from "./CurrentLocation";
 import Search from "./Search";
+import Framework7 from "framework7/types";
 
 export default function Map(props: MapProperties) {
   const [markers, setMarkers] = useState<MapMarker[]>([]);
@@ -25,7 +26,7 @@ export default function Map(props: MapProperties) {
   const [endPoint, setEndPoint] = useState<Position | null>(null);
   const [addMode, setAddMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
-  const startPointMarkerId: string = 'startPointMarker';
+  const startPointMarkerId: string = "startPointMarker";
 
   console.log("Map Height:", props.mapHeight);
 
@@ -65,16 +66,20 @@ export default function Map(props: MapProperties) {
     if (!deleteMode) return;
     if (id === startPointMarkerId) return;
     console.log("Deleting marker with id:", id);
-    const markerToDelete = markers.find(marker => marker.id === id);
+    const markerToDelete = markers.find((marker) => marker.id === id);
     console.log("Deleting marker:", markerToDelete);
-    if (markerToDelete 
-      && markerToDelete.position.lat === endPoint?.lat 
-      && markerToDelete.position.lng === endPoint?.lng) {
-        console.log("Deleted marker was the end point. Resetting end point.");
+    if (
+      markerToDelete &&
+      markerToDelete.position.lat === endPoint?.lat &&
+      markerToDelete.position.lng === endPoint?.lng
+    ) {
+      console.log("Deleted marker was the end point. Resetting end point.");
       setEndPoint(null);
     }
 
-    setMarkers(prevMarkers => prevMarkers.filter(marker => marker.id !== id));
+    setMarkers((prevMarkers) =>
+      prevMarkers.filter((marker) => marker.id !== id)
+    );
   }
 
   function EnableAddMode() {
@@ -85,7 +90,7 @@ export default function Map(props: MapProperties) {
         },
       });
     }
-    
+
     return null;
   }
 
@@ -100,9 +105,7 @@ export default function Map(props: MapProperties) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <CurrentLocation 
-      setStartPoint={setStartPoint} 
-      addMarker={addMarker} />
+      <CurrentLocation setStartPoint={setStartPoint} addMarker={addMarker} />
       <SimpleMarkers
         add_control={true}
         delete_control={true}
@@ -113,32 +116,60 @@ export default function Map(props: MapProperties) {
       <Search />
       {markers.map((marker: MapMarker) => {
         return (
-          <Marker 
-          key={marker.id}
-           position={marker.position}
-           eventHandlers={{
-            click: () => {
-              if (deleteMode) {
-                deleteMarkerFromMap(marker.id);
-              }
-            },
-          }}>
+          <Marker
+            key={marker.id}
+            position={marker.position}
+            eventHandlers={{
+              click: () => {
+                if (deleteMode) {
+                  deleteMarkerFromMap(marker.id);
+                }
+              },
+            }}
+          >
             <Popup>
               <div>
-                <p>Adresse: {marker.address.display_name}</p>
-                {/* <p>Position: {marker.position.toString()}</p> */}
-                <button onClick={() => setEndPoint(marker.position)}>Calculate route for this position</button>
+                {/* <p>Adresse: {marker.address.display_name}</p> */}
+                <p>
+                  Adresse:
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      if (marker.address) {
+                        props.markerAddressCallback(marker.address.address);
+                      }
+
+                      if (props.panelLinkRef.current && marker.address.address) {
+                        e.preventDefault();
+                        props.panelLinkRef.current.el?.click();
+                      }
+                    }}
+                  >
+                    {marker.address.display_name}
+                  </a>
+                </p>
+                {/* {props.panelLinkRef.current && (
+                  <button
+                    onClick={() => props.panelLinkRef.current!.el?.click()}
+                  >
+                    Open Panel
+                  </button>
+                )} */}
+
+                {marker.id !== startPointMarkerId && (
+                  <button
+                    className="routing-button"
+                    onClick={() => setEndPoint(marker.position)}
+                  >
+                    Calculate route to this position
+                  </button>
+                )}
               </div>
             </Popup>
           </Marker>
         );
       })}
-      {endPoint && (
-        <RoutingMachineWrapper
-          start={startPoint}
-          end={endPoint}
-        />
-      )}
+      {endPoint && <RoutingMachineWrapper start={startPoint} end={endPoint} />}
     </MapContainer>
   );
 }
