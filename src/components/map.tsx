@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -18,7 +18,6 @@ import { mapPositionToLatLng } from "../js/utils";
 import SimpleMarkers from "./SimpleMarkers";
 import CurrentLocation from "./CurrentLocation";
 import Search from "./Search";
-import Framework7 from "framework7/types";
 
 export default function Map(props: MapProperties) {
   const [markers, setMarkers] = useState<MapMarker[]>([]);
@@ -56,10 +55,8 @@ export default function Map(props: MapProperties) {
       leafLetMarker: new L.Marker(mapPositionToLatLng(position) as L.LatLng),
     };
 
-    // setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
     setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
     props.markerAddressCallback(newMarker.address.address);
-    // setEndPoint(position);
   }
 
   function deleteMarkerFromMap(id: string) {
@@ -129,7 +126,6 @@ export default function Map(props: MapProperties) {
           >
             <Popup>
               <div>
-                {/* <p>Adresse: {marker.address.display_name}</p> */}
                 <p>
                   Adresse:
                   <a
@@ -148,14 +144,6 @@ export default function Map(props: MapProperties) {
                     {marker.address.display_name}
                   </a>
                 </p>
-                {/* {props.panelLinkRef.current && (
-                  <button
-                    onClick={() => props.panelLinkRef.current!.el?.click()}
-                  >
-                    Open Panel
-                  </button>
-                )} */}
-
                 {marker.id !== startPointMarkerId && (
                   <button
                     className="routing-button"

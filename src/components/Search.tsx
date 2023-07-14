@@ -1,3 +1,4 @@
+/** Inspired by https://github.com/luka1199/Leaflet.AnimatedSearchBox */
 import React, { useState, useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
