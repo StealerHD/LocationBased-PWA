@@ -5,6 +5,7 @@ import L from "leaflet";
 import axios from "axios";
 import { Position } from "../js/position";
 import { NominatimResponse } from "../js/nominatimResponse";
+import { useStore } from "./store";
 
 type SearchProps = {};
 
@@ -14,7 +15,7 @@ const Search: React.FC<SearchProps> = ({}) => {
   const searchboxWrapperRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const searchButtonRef = useRef<HTMLButtonElement | null>(null);
-
+  const { state, dispatch } = useStore();
   const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
@@ -109,43 +110,58 @@ const Search: React.FC<SearchProps> = ({}) => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "Enter") {
-            const searchValue = searchInputRef.current?.value;
-            if (searchValue) {
-                axios
-                    .get<NominatimResponse>(`https://nominatim.openstreetmap.org/search?format=json&q=${searchValue}`)
-                    .then((response) => {
-                        const nominatimResponse: any = response.data;
-                        if (nominatimResponse.length > 0) {
-                            const firstResult = nominatimResponse[0];
-                            const position: Position = {
-                                lat: parseFloat(firstResult.lat),
-                                lng: parseFloat(firstResult.lon),
-                            };
-                            setTimeout(hide, 35);
-                            map.flyTo(position, 16);   
-                        }
+      if (event.key === "Enter") {
+        const searchValue = searchInputRef.current?.value;
+        if (searchValue) {
+          const cachedResponse = state.nominatimCache[searchValue];
 
-                        searchInputRef.current!.value = "";
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                    });
-            }
+          if (cachedResponse) {
+            console.log("Using cached search response");
+            const position: Position = {
+              lat: parseFloat(cachedResponse.lat),
+              lng: parseFloat(cachedResponse.lon),
+            };
+            setTimeout(hide, 35);
+            map.flyTo(position, 16);
+            searchInputRef.current!.value = "";
+          } else {
+            axios
+              .get<NominatimResponse>(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${searchValue}`
+              )
+              .then((response) => {
+                const nominatimResponse: any = response.data;
+                if (nominatimResponse.length > 0) {
+                  const firstResult = nominatimResponse[0];
+                  const position: Position = {
+                    lat: parseFloat(firstResult.lat),
+                    lng: parseFloat(firstResult.lon),
+                  };
+                  dispatch({ type: 'addToNominatimCache', payload: { key: searchValue, value: firstResult } });
+                  setTimeout(hide, 35);
+                  map.flyTo(position, 16);
+                }
+
+                searchInputRef.current!.value = "";
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          }
         }
+      }
     };
 
     if (searchInputRef.current) {
-        searchInputRef.current.addEventListener("keydown", handleKeyDown);
+      searchInputRef.current.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
-        if (searchInputRef.current) {
-            searchInputRef.current.removeEventListener('keydown', handleKeyDown);
-        }
+      if (searchInputRef.current) {
+        searchInputRef.current.removeEventListener("keydown", handleKeyDown);
+      }
     };
-}, []);
-
+  }, [state]);
 
   return null;
 };

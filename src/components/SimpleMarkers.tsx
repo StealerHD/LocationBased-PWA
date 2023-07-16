@@ -75,7 +75,8 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
 
   useEffect(() => {
     if (addDivRef.current) {
-      addDivRef.current.onclick = () => {
+      addDivRef.current.onclick = (event) => {
+        event.stopPropagation();
         setTimeout(() => {
           setAddMode(!addMode);
           refAddMode && refAddMode(!addMode);
@@ -86,7 +87,8 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
       };
     }
     if (deleteDivRef.current) {
-      deleteDivRef.current.onclick = () => {
+      deleteDivRef.current.onclick = (event) => {
+        event.stopPropagation(); 
         setDeleteMode(!deleteMode);
         refDeleteMode && refDeleteMode(!deleteMode);
         setAddMode(false);

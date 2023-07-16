@@ -18,6 +18,7 @@ import { mapPositionToLatLng } from "../js/utils";
 import SimpleMarkers from "./SimpleMarkers";
 import CurrentLocation from "./CurrentLocation";
 import Search from "./Search";
+import { useStore } from './store';
 
 export default function Map(props: MapProperties) {
   const [markers, setMarkers] = useState<MapMarker[]>([]);
@@ -26,17 +27,27 @@ export default function Map(props: MapProperties) {
   const [addMode, setAddMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const startPointMarkerId: string = "startPointMarker";
+  const { state, dispatch } = useStore();
 
   console.log("Map Height:", props.mapHeight);
 
   async function reverseGeocode(
     position: Position
   ): Promise<NominatimResponse> {
+    
+    const cacheKey = `${position.lat},${position.lng}`;
+    const cachedResponse = state.nominatimCache[cacheKey];
+
+    if (cachedResponse) {
+      console.log("Using cached response:", cachedResponse);
+      return cachedResponse;
+    }
+
     try {
       const response = await axios.get<NominatimResponse>(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.lat}&lon=${position.lng}`
       );
-      console.log(response.data);
+      dispatch({ type: 'addToNominatimCache', payload: { key: cacheKey, value: response.data } });
       return response.data;
     } catch (error) {
       console.error("Reverse geocoding error:", error);
@@ -62,15 +73,13 @@ export default function Map(props: MapProperties) {
   function deleteMarkerFromMap(id: string) {
     if (!deleteMode) return;
     if (id === startPointMarkerId) return;
-    console.log("Deleting marker with id:", id);
     const markerToDelete = markers.find((marker) => marker.id === id);
-    console.log("Deleting marker:", markerToDelete);
+    
     if (
       markerToDelete &&
       markerToDelete.position.lat === endPoint?.lat &&
       markerToDelete.position.lng === endPoint?.lng
     ) {
-      console.log("Deleted marker was the end point. Resetting end point.");
       setEndPoint(null);
     }
 

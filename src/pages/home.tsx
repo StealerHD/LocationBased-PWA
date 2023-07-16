@@ -25,22 +25,15 @@ const HomePage = () => {
     // const navbar = $$(".navbar");
     const toolbar = $$(".toolbar");
 
-    // console.log("Navbar:", navbar); // Check if the element is found
-    console.log("Toolbar:", toolbar);
-
     // const navbarHeight = navbar.height() || 0;
     const toolbarHeight = toolbar.height() || 0;
-
-    // console.log("Navbar Height:", navbarHeight); // Check if the height is properly calculated
-    console.log("Toolbar Height:", toolbarHeight);
 
     const vh = Math.max(
       document.documentElement.clientHeight || 0,
       window.innerHeight || 0
     );
-    console.log("vh:", vh);
+    
     const calculatedMapHeight = `${vh - toolbarHeight}px`;
-    console.log("calculatedMapHeight:", calculatedMapHeight);
     setMapHeight(calculatedMapHeight);
   };
 
@@ -61,7 +54,7 @@ const HomePage = () => {
     } else {
       setWikiSearchTerm("");
     }
-    console.log(wikiSearchTerm);
+    // console.log(wikiSearchTerm);
   };
 
   return (
