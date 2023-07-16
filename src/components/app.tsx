@@ -7,6 +7,14 @@ import routes from "../js/routes";
 import store from "../js/store";
 
 const MyApp = () => {
+  const getSWPath = () => {
+    const { pathname } = window.location;
+    const paths = pathname.split("/");
+    const subDir = paths[1]; // 0 will be empty string as pathname starts with '/'
+    return `/${subDir}/service-worker.js`;
+  };
+
+
   // Framework7 Parameters
   const f7params = {
     name: "LocationBasedApp", // App name
@@ -23,7 +31,7 @@ const MyApp = () => {
     serviceWorker:
       process.env.NODE_ENV === "production"
         ? {
-            path: "/service-worker.js",
+            path: getSWPath(),
           }
         : {},
   };
