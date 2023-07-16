@@ -175,6 +175,14 @@
   height: 0px;
 }
 
+.error-toast {
+  background-color: red;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
 @media only screen and (max-width: 1200px) {
   .panel {
     width: 260px;

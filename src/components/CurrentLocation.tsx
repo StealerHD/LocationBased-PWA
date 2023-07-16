@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { f7 } from "framework7-react";
 import { useMap } from "react-leaflet";
 import { Position } from "../js/position";
 
@@ -7,10 +8,13 @@ type CurrentLocationProps = {
   addMarker: (pos: Position, id?: string) => Promise<void>;
 };
 
-const CurrentLocation: React.FC<CurrentLocationProps> = ({ setStartPoint, addMarker }) => {
+const CurrentLocation: React.FC<CurrentLocationProps> = ({
+  setStartPoint,
+  addMarker,
+}) => {
   const map = useMap();
   const didRun = useRef(false);
-  const startPointMarkerId: string = 'startPointMarker';
+  const startPointMarkerId: string = "startPointMarker";
 
   useEffect(() => {
     if (didRun.current) return;
@@ -21,12 +25,26 @@ const CurrentLocation: React.FC<CurrentLocationProps> = ({ setStartPoint, addMar
           lng: position.coords.longitude,
         };
         setStartPoint(pos);
+
         addMarker(pos, startPointMarkerId).then(() => {
           map.flyTo([pos.lat, pos.lng], 14);
         });
       });
     } else {
-      alert("Geolocation is not supported by this browser.");
+      const toastLargeMessage = f7.toast.create({
+        text: "Geolocation is not supported by this browser.",
+        closeTimeout: 2000,
+        horizontalPosition: "center",
+        destroyOnClose: true,
+        cssClass: "error-toast"
+      });
+
+      if (toastLargeMessage) {
+        toastLargeMessage.open();
+      } else {
+        console.error("Failed to create toast.");
+      }
+
       console.log("Geolocation is not supported by this browser.");
     }
 
