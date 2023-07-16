@@ -51,7 +51,7 @@ const Search: React.FC<SearchProps> = ({}) => {
         "leaflet-searchbox-icon",
         searchButton
       );
-      searchIcon.src = "/search_icon.png";
+      searchIcon.src = "search_icon.png";
 
       searchInputRef.current = searchInput;
       searchButtonRef.current = searchButton;
