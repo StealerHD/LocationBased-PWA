@@ -1,1 +1,190 @@
 /* Your app custom styles here */
+
+.panel {
+  width: 400px;
+}
+
+#map {
+  top: 0;
+  width: 100%;
+  height: "100%";
+  min-height: "100%";
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+
+.leaflet-control-container .leaflet-routing-container {
+  background-color: #333;
+  color: #fff;
+  display: none;
+}
+
+.add_marker_control {
+  background-image: url("/add_marker.png");
+  width: 22px;
+  height: 22px;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  display: block;
+  padding: 5px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
+  cursor: auto;
+  text-align: center;
+  background-color: #ffffff;
+}
+
+.add_marker_control:hover {
+  background-color: #f4f4f4;
+}
+
+.del_marker_control {
+  background-image: url("/del_marker.png");
+  width: 22px;
+  height: 22px;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  display: block;
+  padding: 5px;
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
+  cursor: auto;
+  text-align: center;
+  background-color: #ffffff;
+}
+
+.del_marker_control:hover {
+  background-color: #f4f4f4;
+}
+
+.add_marker_control[data-selected="true"] {
+  background-color: green;
+}
+
+.del_marker_control[data-selected="true"] {
+  background-color: red;
+}
+
+/* Searchbar */
+.leaflet-searchbox-wrapper {
+    display: flex;
+    justify-content: right;
+    height: 40px;
+    border-top-left-radius: 20px 50%;
+    border-bottom-left-radius: 20px 50%;
+    border-top-right-radius: 20px 50%;
+    border-bottom-right-radius: 20px 50%;
+}
+
+.leaflet-searchbox-wrapper .leaflet-searchbox,
+.leaflet-searchbox-wrapper .leaflet-searchbox-button {
+    background-color: white;    
+    border: 1px rgb(0, 0, 0, 0.3) solid;
+    outline: none;
+    transition-duration: 0.2s;
+}
+
+.leaflet-searchbox-wrapper .leaflet-searchbox {
+    width: 300px;
+    font-size: 17px;
+    transition-delay: 0.1s;
+    z-index: 702;
+    color: black;
+}
+
+.leaflet-searchbox-wrapper .leaflet-searchbox-left {
+    border-top-left-radius: 20px 50%;
+    border-bottom-left-radius: 20px 50%;
+    border-right: none;
+    padding: 0px 0px 0px 15px;
+}
+
+.leaflet-searchbox-wrapper .leaflet-searchbox-button {
+    width: 40px;
+    transition-delay: 0s;
+    z-index: 702;
+}
+
+.leaflet-searchbox-wrapper .leaflet-searchbox-button:hover {
+    cursor: pointer;
+}
+
+.leaflet-searchbox-wrapper .leaflet-searchbox-button-right {
+    border-top-right-radius: 20px 50%;
+    border-bottom-right-radius: 20px 50%;
+    border-left: none;
+}
+
+.leaflet-searchbox-wrapper .leaflet-searchbox-button-left {
+    border-top-left-radius: 20px 50%;
+    border-bottom-left-radius: 20px 50%;
+    border-right: none;
+}
+
+.leaflet-searchbox-wrapper .leaflet-searchbox-button i {
+    font-size: 130%;
+}
+
+.leaflet-searchbox-container .leaflet-searchbox-icon {
+    width: 69%;
+    height: auto;
+}
+
+.collapsed .leaflet-searchbox {
+    width: 0px !important;
+    padding: 0px;
+    transition-delay: 0s;
+}
+
+.collapsed .leaflet-searchbox {
+    border-left: none;
+    border-right: none;
+}
+
+.collapsed .leaflet-searchbox-button {
+    border-radius: 50%;
+    transition-delay: 0.2s;
+    border: 1px rgb(0, 0, 0, 0.3) solid;
+}
+
+.leaflet-searchbox-wrapper.open .leaflet-searchbox,
+.leaflet-searchbox-wrapper.open .leaflet-searchbox-button {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.routing-button {
+  border: none;
+  background-color: white;
+  color: blue;
+  font-weight: bold;
+}
+
+.hidden-link {
+  display: none;
+  visibility: hidden;
+  height: 0px;
+}
+
+.error-toast {
+  background-color: red;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+@media only screen and (max-width: 1200px) {
+  .panel {
+    width: 260px;
+  }
+}

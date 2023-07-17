@@ -23,6 +23,7 @@ export default async () => {
       rollupOptions: {
         treeshake: false,
       },
+      sourcemap: true,
     },
     resolve: {
       alias: {
