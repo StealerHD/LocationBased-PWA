@@ -8,12 +8,13 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "generate-manifest": "node scripts/generate-manifest.js",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d www",
     "start": "npm run dev",
     "check-types": "tsc --noEmit",
-    "dev": "cross-env NODE_ENV=development vite",
-    "build": "cross-env NODE_ENV=production vite build && npx workbox generateSW workbox-config.cjs",
+    "dev": "npm run generate-manifest && cross-env NODE_ENV=development vite",
+    "build": "npm run generate-manifest && cross-env NODE_ENV=production vite build && npx workbox generateSW workbox-config.cjs",
     "postinstall": "cpy --flat ./node_modules/framework7-icons/fonts/*.* ./src/fonts/ && cpy --flat ./node_modules/material-icons/iconfont/*.* ./src/fonts/"
   },
   "browserslist": [
@@ -23,6 +24,7 @@
     "last 5 Firefox versions"
   ],
   "dependencies": {
+    "@tanstack/react-query": "^4.29.25",
     "axios": "^1.4.0",
     "dom7": "^4.0.6",
     "framework7": "^8.0.5",

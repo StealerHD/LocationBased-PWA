@@ -29,7 +29,6 @@ const SimpleMarkers: React.FC<SimpleMarkersProps> = ({
   const deleteDivRef = useRef<HTMLDivElement | null>(null);
   const [addMode, setAddMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
-
   const addModeRef = useRef(addMode);
   const deleteModeRef = useRef(deleteMode);
 

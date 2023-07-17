@@ -18,9 +18,9 @@ import { mapPositionToLatLng } from "../js/utils";
 import SimpleMarkers from "./SimpleMarkers";
 import CurrentLocation from "./CurrentLocation";
 import Search from "./Search";
-import { useStore } from './store';
+import { useStore } from './Store';
 
-export default function Map(props: MapProperties) {
+const Map: React.FC<MapProperties> = ({ mapHeight, markerAddressCallback, startGeoData, panelLinkRef }) => {
   const [markers, setMarkers] = useState<MapMarker[]>([]);
   const [startPoint, setStartPoint] = useState<Position>({ lat: 0, lng: 0 });
   const [endPoint, setEndPoint] = useState<Position | null>(null);
@@ -29,12 +29,10 @@ export default function Map(props: MapProperties) {
   const startPointMarkerId: string = "startPointMarker";
   const { state, dispatch } = useStore();
 
-  console.log("Map Height:", props.mapHeight);
-
   async function reverseGeocode(
     position: Position
   ): Promise<NominatimResponse> {
-    
+
     const cacheKey = `${position.lat},${position.lng}`;
     const cachedResponse = state.nominatimCache[cacheKey];
 
@@ -67,14 +65,14 @@ export default function Map(props: MapProperties) {
     };
 
     setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
-    props.markerAddressCallback(newMarker.address.address);
+    markerAddressCallback(newMarker.address.address);
   }
 
   function deleteMarkerFromMap(id: string) {
     if (!deleteMode) return;
     if (id === startPointMarkerId) return;
     const markerToDelete = markers.find((marker) => marker.id === id);
-    
+
     if (
       markerToDelete &&
       markerToDelete.position.lat === endPoint?.lat &&
@@ -102,9 +100,9 @@ export default function Map(props: MapProperties) {
 
   return (
     <MapContainer
-      center={props.startGeoData}
+      center={startGeoData}
       zoom={14}
-      style={{ height: props.mapHeight }}
+      style={{ height: mapHeight }}
       id="map"
     >
       <TileLayer
@@ -141,12 +139,12 @@ export default function Map(props: MapProperties) {
                     href="#"
                     onClick={(e) => {
                       if (marker.address) {
-                        props.markerAddressCallback(marker.address.address);
+                        markerAddressCallback(marker.address.address);
                       }
 
-                      if (props.panelLinkRef.current && marker.address.address) {
+                      if (panelLinkRef.current && marker.address.address) {
                         e.preventDefault();
-                        props.panelLinkRef.current.el?.click();
+                        panelLinkRef.current.el?.click();
                       }
                     }}
                   >
@@ -170,3 +168,5 @@ export default function Map(props: MapProperties) {
     </MapContainer>
   );
 }
+
+export default Map;

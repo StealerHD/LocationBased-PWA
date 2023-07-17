@@ -26,11 +26,19 @@ const CurrentLocation: React.FC<CurrentLocationProps> = ({
         };
         setStartPoint(pos);
 
+        /**
+         * To prevent the start point marker from being deleted
+         * whe set a fixed id for it.
+         */
         addMarker(pos, startPointMarkerId).then(() => {
           map.flyTo([pos.lat, pos.lng], 14);
         });
       });
     } else {
+      /**
+       * To have more the feel of a native app we use a toast 
+       * for error messages.
+       */
       const toastLargeMessage = f7.toast.create({
         text: "Geolocation is not supported by this browser.",
         closeTimeout: 2000,

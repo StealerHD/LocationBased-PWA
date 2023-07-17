@@ -1,19 +1,17 @@
 import React from "react";
-import { StoreProvider } from "./store";
-
-import { f7, f7ready, App, View } from "framework7-react";
-
+import { StoreProvider } from "./Store";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {f7, App, View } from "framework7-react";
 import routes from "../js/routes";
-import store from "../js/store";
 
 const MyApp = () => {
+  const queryClient = new QueryClient();
   const getSWPath = () => {
     const { pathname } = window.location;
     const paths = pathname.split("/");
     const subDir = paths[1]; // 0 will be empty string as pathname starts with '/'
     return `/${subDir}/service-worker.js`;
   };
-
 
   // Framework7 Parameters
   const f7params = {
@@ -22,8 +20,6 @@ const MyApp = () => {
 
     darkMode: true,
 
-    // App store
-    store: store,
     // App routes
     routes: routes,
 
@@ -36,16 +32,14 @@ const MyApp = () => {
         : {},
   };
 
-  f7ready(() => {
-    // Call F7 APIs here
-  });
-
   return (
     <StoreProvider>
-      <App {...f7params}>
-        {/* Your main view, should have "view-main" class */}
-        <View main className="safe-areas" url="/" />
-      </App>
+      <QueryClientProvider client={queryClient}>
+        <App {...f7params}>
+          {/* Your main view, should have "view-main" class */}
+          <View main className="safe-areas" url="/" />
+        </App>
+      </QueryClientProvider>
     </StoreProvider>
   );
 };

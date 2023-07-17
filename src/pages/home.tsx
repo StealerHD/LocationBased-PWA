@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Page,
-  Navbar,
-  NavTitle,
   Link,
   Toolbar,
   Block,
@@ -10,30 +8,21 @@ import {
 } from "framework7-react";
 import Map from "../components/map";
 import WikipediaEntry from "../components/wiki";
-import Dom7 from "dom7";
 import { Address } from "../js/address";
 
-const $$ = Dom7;
-
 const HomePage = () => {
-  const [wikiSearchTerm, setWikiSearchTerm] = useState<string>("");
+  const [wikiSearchTerm, setWikiSearchTerm] = useState<string | null>(null);
   const defaultLocation: [number, number] = [47.665628, 9.447467];
   const [mapHeight, setMapHeight] = useState("100vh");
   const panelLinkRef = React.useRef<{ el: HTMLElement | null, f7SmartSelect: () => any }>({ el: null, f7SmartSelect: () => {} });
 
   const handleResize = () => {
-    // const navbar = $$(".navbar");
-    const toolbar = $$(".toolbar");
-
-    // const navbarHeight = navbar.height() || 0;
-    const toolbarHeight = toolbar.height() || 0;
-
     const vh = Math.max(
       document.documentElement.clientHeight || 0,
       window.innerHeight || 0
     );
     
-    const calculatedMapHeight = `${vh - toolbarHeight}px`;
+    const calculatedMapHeight = `${vh}px`;
     setMapHeight(calculatedMapHeight);
   };
 
@@ -52,18 +41,16 @@ const HomePage = () => {
     } else if (address.city) {
       setWikiSearchTerm(address.city);
     } else {
-      setWikiSearchTerm("");
+      setWikiSearchTerm(null);
     }
-    // console.log(wikiSearchTerm);
   };
 
   return (
     <Page name="home">
-      {/* Top Navbar */}
-      {/* <Navbar>
-        <NavTitle>f7-testing</NavTitle>
-      </Navbar> */}
-      {/* Toolbar */}
+      {/* Since Framewokr7 has unfortunatly no API way to open existing paneles
+          programmatically, we have to do a hacky workaround with the Link component
+          therefor the link and the toolbar are hidden
+      */}
       <Toolbar bottom className="hidden-link">
         <Link panelOpen="right" className="hidden-link" ref={panelLinkRef}>
           Left Link
@@ -80,7 +67,7 @@ const HomePage = () => {
       </Block>
       <Panel right cover swipe swipeOnlyClose style={{ padding: "5px" }}>
         <h2>{wikiSearchTerm}</h2>
-        {wikiSearchTerm !== "" ? (
+        {wikiSearchTerm !== null ? (
           <WikipediaEntry searchTerm={wikiSearchTerm}></WikipediaEntry>
         ) : (
           <p>No Wikipedia entry found!</p>

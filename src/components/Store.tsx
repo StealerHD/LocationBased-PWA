@@ -33,10 +33,6 @@ interface StoreProviderProps {
   children: React.ReactNode;
 }
 
-interface StoreProviderProps {
-  children: React.ReactNode;
-}
-
 export const StoreProvider = ({ children }: StoreProviderProps) => {
   const [state, dispatch] = useReducer(reducer, { nominatimCache: {} });
 

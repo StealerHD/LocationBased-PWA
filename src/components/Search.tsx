@@ -1,15 +1,14 @@
 /** Inspired by https://github.com/luka1199/Leaflet.AnimatedSearchBox */
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Position } from "../js/position";
 import { NominatimResponse } from "../js/nominatimResponse";
-import { useStore } from "./store";
+import { useStore } from "./Store";
+import { useQuery } from "@tanstack/react-query";
 
-type SearchProps = {};
-
-const Search: React.FC<SearchProps> = ({}) => {
+const Search = () => {
   const map = useMap();
   const serachContainerRef = useRef<HTMLDivElement | null>(null);
   const searchboxWrapperRef = useRef<HTMLDivElement | null>(null);
@@ -17,7 +16,12 @@ const Search: React.FC<SearchProps> = ({}) => {
   const searchButtonRef = useRef<HTMLButtonElement | null>(null);
   const { state, dispatch } = useStore();
   const [collapsed, setCollapsed] = useState(true);
+  const [searchValue, setSearchValue] = useState<string | null>(null);
 
+  /**
+   * Since AnimatedSearchBox is a leaflet plugin that is not written in React,
+   * we tried to replicate the plugin's functionality in React. 
+   */
   useEffect(() => {
     const searchControlDiv = L.control({ position: "topright" });
 
@@ -52,6 +56,7 @@ const Search: React.FC<SearchProps> = ({}) => {
         searchButton
       );
       searchIcon.src = "search_icon.png";
+      searchIcon.alt = "Search";
 
       searchInputRef.current = searchInput;
       searchButtonRef.current = searchButton;
@@ -108,6 +113,37 @@ const Search: React.FC<SearchProps> = ({}) => {
     }
   }, [collapsed]);
 
+  /**
+   * We use react-query here to have better control over the request and
+   * have better error handling.
+   */
+  useQuery<NominatimResponse[], AxiosError>({
+    queryKey: ['nominatim', searchValue],
+    queryFn: async () => {
+      const { data } = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${searchValue}`);
+      return data as NominatimResponse[];
+    },
+    enabled: !!searchValue,  // Only run the query when searchValue is not null
+    retry: false,
+    onSuccess: (data: NominatimResponse[]) => {
+      if (data.length > 0) {
+        const firstResult = data[0];
+        const position: Position = {
+          lat: parseFloat(firstResult.lat),
+          lng: parseFloat(firstResult.lon),
+        };
+        dispatch({ type: 'addToNominatimCache', payload: { key: searchValue!, value: firstResult } });
+        setTimeout(hide, 35);
+        map.flyTo(position, 16);
+      }
+      setSearchValue(null);
+      searchInputRef.current!.value = "";
+    },
+    onError: (error: AxiosError) => {
+      console.error(error);
+    },
+  });
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Enter") {
@@ -125,28 +161,7 @@ const Search: React.FC<SearchProps> = ({}) => {
             map.flyTo(position, 16);
             searchInputRef.current!.value = "";
           } else {
-            axios
-              .get<NominatimResponse>(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${searchValue}`
-              )
-              .then((response) => {
-                const nominatimResponse: any = response.data;
-                if (nominatimResponse.length > 0) {
-                  const firstResult = nominatimResponse[0];
-                  const position: Position = {
-                    lat: parseFloat(firstResult.lat),
-                    lng: parseFloat(firstResult.lon),
-                  };
-                  dispatch({ type: 'addToNominatimCache', payload: { key: searchValue, value: firstResult } });
-                  setTimeout(hide, 35);
-                  map.flyTo(position, 16);
-                }
-
-                searchInputRef.current!.value = "";
-              })
-              .catch((error) => {
-                console.error(error);
-              });
+            setSearchValue(searchValue);
           }
         }
       }
