@@ -78,7 +78,7 @@
 .leaflet-searchbox-wrapper {
     display: flex;
     justify-content: right;
-    height: 40px;
+    height: 48px;
     border-top-left-radius: 20px 50%;
     border-bottom-left-radius: 20px 50%;
     border-top-right-radius: 20px 50%;
@@ -109,7 +109,7 @@
 }
 
 .leaflet-searchbox-wrapper .leaflet-searchbox-button {
-    width: 40px;
+    width: 48px;
     transition-delay: 0s;
     z-index: 702;
 }

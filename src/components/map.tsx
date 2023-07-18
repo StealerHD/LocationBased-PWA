@@ -6,7 +6,6 @@ import {
   Popup,
   useMapEvents,
 } from "react-leaflet";
-import L from "leaflet";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { Position } from "../js/position";
@@ -14,7 +13,6 @@ import RoutingMachineWrapper from "./mapRoutingWrapper";
 import { NominatimResponse } from "../js/nominatimResponse";
 import { MapMarker } from "../js/mapMarker";
 import { MapProperties } from "../js/mapProperties";
-import { mapPositionToLatLng } from "../js/utils";
 import SimpleMarkers from "./SimpleMarkers";
 import CurrentLocation from "./CurrentLocation";
 import Search from "./Search";
@@ -61,26 +59,15 @@ const Map: React.FC<MapProperties> = ({ mapHeight, markerAddressCallback, startG
       id: markerId,
       position,
       address: response,
-      leafLetMarker: new L.Marker(mapPositionToLatLng(position) as L.LatLng),
     };
 
     setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
-    markerAddressCallback(newMarker.address.address);
   }
 
   function deleteMarkerFromMap(id: string) {
     if (!deleteMode) return;
     if (id === startPointMarkerId) return;
-    const markerToDelete = markers.find((marker) => marker.id === id);
-
-    if (
-      markerToDelete &&
-      markerToDelete.position.lat === endPoint?.lat &&
-      markerToDelete.position.lng === endPoint?.lng
-    ) {
-      setEndPoint(null);
-    }
-
+  
     setMarkers((prevMarkers) =>
       prevMarkers.filter((marker) => marker.id !== id)
     );
@@ -134,16 +121,16 @@ const Map: React.FC<MapProperties> = ({ mapHeight, markerAddressCallback, startG
             <Popup>
               <div>
                 <p>
-                  Adresse:
+                  Address:
                   <a
                     href="#"
                     onClick={(e) => {
+                      e.preventDefault();
                       if (marker.address) {
                         markerAddressCallback(marker.address.address);
                       }
 
                       if (panelLinkRef.current && marker.address.address) {
-                        e.preventDefault();
                         panelLinkRef.current.el?.click();
                       }
                     }}
@@ -154,8 +141,7 @@ const Map: React.FC<MapProperties> = ({ mapHeight, markerAddressCallback, startG
                 {marker.id !== startPointMarkerId && (
                   <button
                     className="routing-button"
-                    onClick={() => setEndPoint(marker.position)}
-                  >
+                    onClick={() => setEndPoint(marker.position)}>
                     Calculate route to this position
                   </button>
                 )}

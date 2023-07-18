@@ -47,7 +47,7 @@ const HomePage = () => {
 
   return (
     <Page name="home">
-      {/* Since Framewokr7 has unfortunatly no API way to open existing paneles
+      {/* Since Framework7 has unfortunatly no API way to open existing paneles
           programmatically, we have to do a hacky workaround with the Link component
           therefor the link and the toolbar are hidden
       */}
