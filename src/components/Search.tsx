@@ -1,5 +1,5 @@
 /** Inspired by https://github.com/luka1199/Leaflet.AnimatedSearchBox */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, MouseEvent, TouchEvent } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import axios, { AxiosError } from "axios";
@@ -57,6 +57,8 @@ const Search = () => {
       );
       searchIcon.src = "search_icon.png";
       searchIcon.alt = "Search";
+      searchIcon.width = 48;
+      searchIcon.height = 48;
 
       searchInputRef.current = searchInput;
       searchButtonRef.current = searchButton;
@@ -177,6 +179,28 @@ const Search = () => {
       }
     };
   }, [state]);
+
+
+  useEffect(() => {
+    const handleClickOrTouchOutside = (event: globalThis.MouseEvent | globalThis.TouchEvent) => {
+      if (
+        searchboxWrapperRef.current &&
+        !searchboxWrapperRef.current.contains(event.target as Node)
+      ) {
+        hide();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOrTouchOutside);
+    document.addEventListener("touchstart", handleClickOrTouchOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOrTouchOutside);
+      document.removeEventListener("touchstart", handleClickOrTouchOutside);
+    };
+  }, []);
+
+
 
   return null;
 };

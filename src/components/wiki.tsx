@@ -19,6 +19,7 @@ const WikipediaEntry: React.FC<WikipediaEntryProps> = ({ searchTerm }) => {
         },
         enabled: !!searchTerm,
         retry: false,
+        cacheTime: 1000 * 60 * 30, 
         onSuccess: (data: WikipediaResponse) => {
             const { originalimage, extract } = data;
 
