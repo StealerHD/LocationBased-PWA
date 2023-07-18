@@ -34,7 +34,12 @@ const WikipediaEntry: React.FC<WikipediaEntryProps> = ({ searchTerm }) => {
         },
         onError: (error: AxiosError) => {
             console.error('Fehler beim Abrufen des Wikipedia-Eintrags:', error);
-            setContent("No Wiki entry found!")
+            if (error.response?.status === 404) {
+                setContent("No Wiki entry found!")
+            } else {
+                setContent(null);
+            }
+            
             setImage(null);
         },
     });

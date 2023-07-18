@@ -34,12 +34,20 @@ const HomePage = () => {
   }, []);
 
   const handleMarkerAddress = (address: Address) => {
-    if (address.village) {
-      setWikiSearchTerm(address.village);
+    if (address.city) {
+      console.log("Using city as search term");
+      let city = address.city;
+      // For some cities Nominatiom response with a "i." instead of "im", which is not recognized by Wikipedia
+      if (city.includes(" i.")) {
+        city = city.replace(/ i\./g, " im ");
+      }
+      setWikiSearchTerm(city);
     } else if (address.town) {
+      console.log("Using town as search term");
       setWikiSearchTerm(address.town);
-    } else if (address.city) {
-      setWikiSearchTerm(address.city);
+    } else if (address.village) {
+      console.log("Using village as search term");
+      setWikiSearchTerm(address.village);
     } else {
       setWikiSearchTerm(null);
     }
