@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { WikipediaResponse } from '../js/WikipediaResponse ';
 
 interface WikipediaEntryProps {
     searchTerm: string | null;

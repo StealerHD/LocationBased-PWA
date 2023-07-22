@@ -1,5 +1,4 @@
 import React, { createContext, useReducer, useContext } from "react";
-import { NominatimResponse } from "../js/nominatimResponse";
 
 interface State {
   nominatimCache: Record<string, NominatimResponse>;

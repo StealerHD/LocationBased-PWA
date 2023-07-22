@@ -1,4 +1,4 @@
-export type Position = {
+type Position = {
     lat: number;
     lng: number;
   };

@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-routing-machine';
-import { RoutingConfig } from '../js/routingConfig';
 import { mapPositionToLatLng } from '../js/utils';
 
 function RoutingMachine({ start, end }: RoutingConfig) {

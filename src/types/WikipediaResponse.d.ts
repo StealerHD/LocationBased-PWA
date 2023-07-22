@@ -1,4 +1,4 @@
-export type WikipediaResponse = {
+type WikipediaResponse = {
     type: string;
     title: string;
     displaytitle: string;

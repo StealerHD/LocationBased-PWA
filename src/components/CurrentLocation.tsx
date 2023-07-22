@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { f7 } from "framework7-react";
 import { useMap } from "react-leaflet";
-import { Position } from "../js/position";
 
 type CurrentLocationProps = {
   setStartPoint: (pos: Position) => void;

@@ -1,4 +1,4 @@
-import { Position } from "./position";
+import { Position } from "../types/position";
 import L from "leaflet";
 
 export function mapPositionToLatLng(
