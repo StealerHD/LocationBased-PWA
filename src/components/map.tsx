@@ -8,11 +8,7 @@ import {
 } from "react-leaflet";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { Position } from "../js/position";
 import RoutingMachineWrapper from "./mapRoutingWrapper";
-import { NominatimResponse } from "../js/nominatimResponse";
-import { MapMarker } from "../js/mapMarker";
-import { MapProperties } from "../js/mapProperties";
 import SimpleMarkers from "./SimpleMarkers";
 import CurrentLocation from "./CurrentLocation";
 import Search from "./Search";

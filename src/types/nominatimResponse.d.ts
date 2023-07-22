@@ -1,6 +1,4 @@
-import { Address } from "./address";
-
-export type NominatimResponse = { 
+type NominatimResponse = { 
     place_id: number;
     licence: string;
     osm_type: string;

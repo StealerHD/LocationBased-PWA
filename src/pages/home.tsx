@@ -8,7 +8,6 @@ import {
 } from "framework7-react";
 import Map from "../components/map";
 import WikipediaEntry from "../components/wiki";
-import { Address } from "../js/address";
 
 const HomePage = () => {
   const [wikiSearchTerm, setWikiSearchTerm] = useState<string | null>(null);

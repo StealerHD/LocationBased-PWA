@@ -3,8 +3,6 @@ import { useState, useEffect, useRef, MouseEvent, TouchEvent } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import axios, { AxiosError } from "axios";
-import { Position } from "../js/position";
-import { NominatimResponse } from "../js/nominatimResponse";
 import { useStore } from "./Store";
 import { useQuery } from "@tanstack/react-query";
 
